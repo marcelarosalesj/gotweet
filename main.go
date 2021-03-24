@@ -30,7 +30,7 @@ func main() {
 		AccessTokenSecret: os.Getenv("ACCESS_TOKEN_SECRET"),
 	}
 
-	client, err := getClient(&creds)
+	client, user, err := getClient(&creds)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -38,23 +38,28 @@ func main() {
 
 	demoPtr := flag.Bool("demo", false, "Show tweets related to Formula 1")
 	homePtr := flag.Bool("home", false, "Displays home page tweets")
+	numPtr := flag.Int("n", 5, "Number of tweets to display")
+	profilePtr := flag.Bool("profile", false, "Show tweets from user's profile")
 	flag.Parse()
 
 	if *demoPtr {
 		searchTweets(client)
 	}
 	if *homePtr {
-		err := showHomePage(client)
+		err := showHomePage(client, *numPtr)
 		if err != nil {
 			fmt.Println(err)
 		}
+	}
+	if *profilePtr {
+		showProfile(client, user, *numPtr)
 	}
 
 	fmt.Println("Bye!")
 
 }
 
-func getClient(creds *Credentials) (*twitter.Client, error) {
+func getClient(creds *Credentials) (*twitter.Client, *twitter.User, error) {
 
 	// These values are the API key and API key secret
 	config := oauth1.NewConfig(creds.ConsumerKey, creds.ConsumerSecret)
@@ -70,11 +75,11 @@ func getClient(creds *Credentials) (*twitter.Client, error) {
 	user, _, err := client.Accounts.VerifyCredentials(verify)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return nil, nil, err
 	}
 	// print out the Twitter handle of the account we have used to authenticate with
 	fmt.Println("Successfully authenticated using the following account : ", user.ScreenName)
-	return client, nil
+	return client, user, nil
 }
 
 func searchTweets(client *twitter.Client) error {
@@ -99,25 +104,42 @@ func searchTweets(client *twitter.Client) error {
 	return nil
 }
 
-func showHomePage(client *twitter.Client) error {
+func showProfile(client *twitter.Client, user *twitter.User, number int) {
+	tweets, _, err := client.Timelines.UserTimeline(&twitter.UserTimelineParams{
+		UserID: user.ID,
+		Count:  number,
+	})
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		for num, tweet := range tweets {
+			fmt.Printf("[%d]\n", num+1)
+			displayTweet(tweet)
+		}
+	}
+
+}
+
+func showHomePage(client *twitter.Client, number int) error {
 	tweets, _, err := client.Timelines.HomeTimeline(&twitter.HomeTimelineParams{
-		Count: 5,
+		Count: number,
 	})
 	if err != nil {
 		return err
 	}
-	for _, tweet := range tweets {
+	for num, tweet := range tweets {
+		fmt.Printf("[%d]\n", num+1)
 		displayTweet(tweet)
 	}
 	return nil
 }
 
 func displayTweet(tweet twitter.Tweet) {
-	fmt.Println("----------")
-	fmt.Println("User: " + tweet.User.Name)
-	fmt.Println("Tweet:" + tweet.Text)
-	fmt.Println("----------")
+	fmt.Printf("\t%s (@%s)\n", tweet.User.Name, tweet.User.ScreenName)
+	fmt.Printf("\t%s\n", tweet.Text)
+	fmt.Printf("\tCreated at: %s\n", tweet.CreatedAt)
 }
+
 func Sum(x, y int) int {
 	return x + y
 }
