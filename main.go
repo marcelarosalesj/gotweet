@@ -37,11 +37,19 @@ func main() {
 	}
 
 	demoPtr := flag.Bool("demo", false, "Show tweets related to Formula 1")
+	homePtr := flag.Bool("home", false, "Displays home page tweets")
 	flag.Parse()
 
 	if *demoPtr {
 		searchTweets(client)
 	}
+	if *homePtr {
+		err := showHomePage(client)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
 	fmt.Println("Bye!")
 
 }
@@ -91,6 +99,25 @@ func searchTweets(client *twitter.Client) error {
 	return nil
 }
 
+func showHomePage(client *twitter.Client) error {
+	tweets, _, err := client.Timelines.HomeTimeline(&twitter.HomeTimelineParams{
+		Count: 5,
+	})
+	if err != nil {
+		return err
+	}
+	for _, tweet := range tweets {
+		displayTweet(tweet)
+	}
+	return nil
+}
+
+func displayTweet(tweet twitter.Tweet) {
+	fmt.Println("----------")
+	fmt.Println("User: " + tweet.User.Name)
+	fmt.Println("Tweet:" + tweet.Text)
+	fmt.Println("----------")
+}
 func Sum(x, y int) int {
 	return x + y
 }
