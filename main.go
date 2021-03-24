@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -34,7 +35,15 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	searchTweets(client)
+
+	demoPtr := flag.Bool("demo", false, "Show tweets related to Formula 1")
+	flag.Parse()
+
+	if *demoPtr {
+		searchTweets(client)
+	}
+	fmt.Println("Bye!")
+
 }
 
 func getClient(creds *Credentials) (*twitter.Client, error) {
