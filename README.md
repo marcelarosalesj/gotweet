@@ -18,7 +18,13 @@ twurl -u "$USER_gotweet" -c $API_KEY -s $API_KEY_SECRET -a $ACCESS_TOKEN -S $ACC
 ## Go code
 I use tutorial [1] as an example for this tool.
 ```
+# Run the code
 go run main.go
+```
+Note that for unit testing the file needs to be called <name>_test.go
+```
+# Run the unit testing
+go test
 ```
 
 ## References

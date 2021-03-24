@@ -81,3 +81,7 @@ func searchTweets(client *twitter.Client) error {
 	}
 	return nil
 }
+
+func Sum(x, y int) int {
+	return x + y
+}
